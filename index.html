@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analisador de Variantes Shopify</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Analisador de Variantes Shopify</h1>
+      <p>Insira os dados da loja para analisar em qual "option" estão os tamanhos dos produtos.</p>
+    </header>
+
+    <main>
+      <form id="store-form">
+        <div class="form-group">
+          <label for="store-domain">Domínio da Loja Shopify</label>
+          <input type="text" id="store-domain" placeholder="ex: sua-loja.myshopify.com" required>
+        </div>
+        <div class="form-group">
+          <label for="api-token">Token de Acesso da API Admin</label>
+          <input type="password" id="api-token" placeholder="Começa com 'shp_...'" required>
+        </div>
+        <button type="submit" id="analyze-button">Analisar Produtos</button>
+      </form>
+
+      <div id="results-container" class="hidden">
+        <h2>Resultado da Análise</h2>
+        <div id="loader" class="hidden">
+          <div class="spinner"></div>
+          <p>Buscando todos os produtos... Isso pode levar alguns minutos para lojas grandes.</p>
+        </div>
+        <pre id="analysis-report"></pre>
+      </div>
+    </main>
+
+    <footer>
+      <p class="warning"><strong>Aviso:</strong> Esta é uma ferramenta para uso local. Seu token de API não é salvo, mas
+        nunca use em um computador público.</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
