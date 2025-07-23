@@ -94,18 +94,13 @@ button:hover {
 
 #results-container {
   margin-top: 30px;
+}
+
+.report-wrapper {
   padding: 20px;
   background-color: var(--bg-color);
   border-radius: 8px;
   border: 1px solid var(--border-color);
-}
-
-#analysis-report {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: #c0c0c0;
 }
 
 .hidden {
@@ -120,11 +115,6 @@ footer {
 .warning {
   font-size: 0.8rem;
   color: #a0a0a0;
-}
-
-.error {
-  color: var(--error-color);
-  font-weight: bold;
 }
 
 #loader {
@@ -148,4 +138,53 @@ footer {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Estilos dos Relatórios */
+.report-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+.report-section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+.variant-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.variant-table th,
+.variant-table td {
+  border: 1px solid var(--border-color);
+  padding: 10px 12px;
+  text-align: left;
+}
+.variant-table th {
+  background-color: #333;
+  font-weight: 500;
+}
+.tag-badge {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+#store-option-details {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #c0c0c0;
+  margin-top: 10px;
+}
+.error {
+  color: var(--error-color);
+  font-weight: bold;
 }

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Analisador de Variantes Shopify</title>
+  <title>Auditor de Loja Shopify</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,8 +14,8 @@
 <body>
   <div class="container">
     <header>
-      <h1>Analisador de Variantes Shopify</h1>
-      <p>Insira os dados da loja para analisar em qual "option" estão os tamanhos dos produtos.</p>
+      <h1>Auditor de Loja Shopify</h1>
+      <p>Faça uma auditoria geral das variantes da loja ou analise um produto específico.</p>
     </header>
 
     <main>
@@ -26,24 +26,56 @@
         </div>
         <div class="form-group">
           <label for="api-token">Token de Acesso da API Admin</label>
-          <input type="password" id="api-token" placeholder="Começa com 'shp_...'" required>
+          <input type="text" id="api-token" placeholder="Começa com 'shpat_...'" required>
         </div>
-        <button type="submit" id="analyze-button">Analisar Produtos</button>
+        <div class="form-group">
+          <label for="product-id">ID do Produto (Opcional)</label>
+          <input type="text" id="product-id" placeholder="Insira apenas se quiser ver as tags de um produto específico">
+        </div>
+        <button type="submit" id="analyze-button">Analisar</button>
       </form>
 
       <div id="results-container" class="hidden">
-        <h2>Resultado da Análise</h2>
         <div id="loader" class="hidden">
           <div class="spinner"></div>
-          <p>Buscando todos os produtos... Isso pode levar alguns minutos para lojas grandes.</p>
+          <p>Analisando... Isso pode levar alguns minutos para a auditoria geral.</p>
         </div>
-        <pre id="analysis-report"></pre>
+
+        <div id="single-product-report" class="report-wrapper hidden">
+          <h2 id="product-title"></h2>
+          <div class="report-section">
+            <h3>Tags do Produto</h3>
+            <p id="product-tags"></p>
+          </div>
+          <div class="report-section">
+            <h3>Análise de Variantes do Produto</h3>
+            <div id="product-variant-analysis"></div>
+            <table class="variant-table">
+              <thead>
+                <tr>
+                  <th>Position</th>
+                  <th>Variante</th>
+                  <th>Preço</th>
+                </tr>
+              </thead>
+              <tbody id="product-variant-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="store-audit-report" class="report-wrapper hidden">
+          <h2>Auditoria Geral das Opções da Loja</h2>
+          <div class="report-section">
+            <div id="store-option-summary"></div>
+            <pre id="store-option-details"></pre>
+          </div>
+        </div>
+
       </div>
     </main>
 
     <footer>
-      <p class="warning"><strong>Aviso:</strong> Esta é uma ferramenta para uso local. Seu token de API não é salvo, mas
-        nunca use em um computador público.</p>
+      <p class="warning"><strong>Aviso:</strong> Esta é uma ferramenta para uso local.</p>
     </footer>
   </div>
 
