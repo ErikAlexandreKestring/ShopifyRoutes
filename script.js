@@ -27,12 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Prepara a UI para a busca
-    resultsContainer.classList.remove("hidden");
-    loader.classList.remove("hidden");
-    singleProductReport.classList.add("hidden");
-    storeAuditReport.classList.add("hidden");
-
     try {
       // LÓGICA CONDICIONAL PRINCIPAL
       if (productId) {
@@ -52,8 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
       productTags.innerHTML = `<span class="error">${error.message}</span>`;
       productVariantAnalysis.innerHTML = "";
       productVariantBody.innerHTML = "";
-    } finally {
-      loader.classList.add("hidden");
     }
   });
 
