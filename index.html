@@ -30,10 +30,16 @@
         </div>
         <div class="form-group">
           <label for="product-id">ID do Produto (Opcional)</label>
-          <input type="text" id="product-id" placeholder="Insira apenas se quiser ver as tags de um produto específico">
+          <input type="text" id="product-id" placeholder="Deixe em branco para uma análise geral">
         </div>
         <button type="submit" id="analyze-button">Analisar</button>
       </form>
+
+      <div id="results-container" class="hidden">
+        <div id="loader" class="hidden">
+          <div class="spinner"></div>
+          <p>Analisando... Isso pode levar alguns minutos para a auditoria geral.</p>
+        </div>
 
         <div id="single-product-report" class="report-wrapper hidden">
           <h2 id="product-title"></h2>
@@ -42,23 +48,14 @@
             <p id="product-tags"></p>
           </div>
           <div class="report-section">
-            <h3>Análise de Variantes do Produto</h3>
-            <div id="product-variant-analysis"></div>
-            <table class="variant-table">
-              <thead>
-                <tr>
-                  <th>Position</th>
-                  <th>Variante</th>
-                  <th>Preço</th>
-                </tr>
-              </thead>
-              <tbody id="product-variant-body"></tbody>
-            </table>
+            <h3>Análise de Opções do Produto</h3>
+            <div id="product-option-summary"></div>
+            <pre id="product-option-details"></pre>
           </div>
         </div>
 
         <div id="store-audit-report" class="report-wrapper hidden">
-          <h2>Auditoria Geral das Opções da Loja</h2>
+          <h2>Auditoria Geral das Opções da Loja (Amostra de 15 Produtos)</h2>
           <div class="report-section">
             <div id="store-option-summary"></div>
             <pre id="store-option-details"></pre>
@@ -68,6 +65,9 @@
       </div>
     </main>
 
+    <footer>
+      <p class="warning"><strong>Aviso:</strong> Esta é uma ferramenta para uso local.</p>
+    </footer>
   </div>
 
   <script src="script.js"></script>
