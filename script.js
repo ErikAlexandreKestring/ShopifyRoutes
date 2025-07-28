@@ -7,8 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const singleProductReport = document.getElementById("single-product-report");
   const productTitle = document.getElementById("product-title");
   const productTags = document.getElementById("product-tags");
-  const productVariantAnalysis = document.getElementById("product-variant-analysis");
-  const productVariantBody = document.getElementById("product-variant-body");
+  const productOptionSummary = document.getElementById("product-option-summary");
+  const productOptionDetails = document.getElementById("product-option-details");
 
   // Elementos do Relatório de Auditoria da Loja
   const storeAuditReport = document.getElementById("store-audit-report");
@@ -17,7 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-
     const domain = document.getElementById("store-domain").value.trim();
     const token = document.getElementById("api-token").value.trim();
     const productId = document.getElementById("product-id").value.trim();
@@ -27,29 +26,32 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    resultsContainer.classList.remove("hidden");
+    loader.classList.remove("hidden");
+    singleProductReport.classList.add("hidden");
+    storeAuditReport.classList.add("hidden");
+
     try {
-      // LÓGICA CONDICIONAL PRINCIPAL
       if (productId) {
-        // Se um ID foi fornecido, busca um único produto
         const product = await fetchSingleProduct(domain, token, productId);
         displaySingleProductReport(product);
       } else {
-        // Se não, faz a auditoria geral das options
         const optionAnalysis = await fetchStoreOptionAudit(domain, token);
         displayStoreAuditReport(optionAnalysis);
       }
     } catch (error) {
       console.error("Erro:", error);
-      // Mostra o erro no template de produto único (serve para ambos os casos)
       singleProductReport.classList.remove("hidden");
+      storeAuditReport.classList.add("hidden");
       productTitle.textContent = "Ocorreu um Erro";
       productTags.innerHTML = `<span class="error">${error.message}</span>`;
-      productVariantAnalysis.innerHTML = "";
-      productVariantBody.innerHTML = "";
+      productOptionSummary.innerHTML = "";
+      productOptionDetails.textContent = "";
+    } finally {
+      loader.classList.add("hidden");
     }
   });
 
-  // --- FUNÇÕES DE FETCH ---
   async function fetchSingleProduct(domain, token, productId) {
     const response = await fetch("http://localhost:3000/api/single-product-lookup", {
       method: "POST",
@@ -57,8 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify({domain, token, productId}),
     });
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error);
+      throw new Error((await response.json()).error);
     }
     return response.json();
   }
@@ -70,80 +71,31 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify({domain, token}),
     });
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error);
+      throw new Error((await response.json()).error);
     }
     return response.json();
   }
 
-  // --- FUNÇÕES DE DISPLAY ---
-  function displaySingleProductReport(product) {
-    singleProductReport.classList.remove("hidden");
-    productTitle.textContent = product.title || "Produto sem título";
-
-    if (product.tags && product.tags.length > 0) {
-      const tagsArray = product.tags.split(",").map((tag) => `<span class="tag-badge">${tag.trim()}</span>`);
-      productTags.innerHTML = tagsArray.join(" ");
-    } else {
-      productTags.textContent = "Este produto não possui nenhuma tag.";
-    }
-
-    const {variants, options} = product;
-    const optionValueCounts = {option1: new Set(), option2: new Set(), option3: new Set()};
-    if (variants) {
-      variants.forEach((v) => {
-        if (v.option1) optionValueCounts.option1.add(v.option1);
-        if (v.option2) optionValueCounts.option2.add(v.option2);
-        if (v.option3) optionValueCounts.option3.add(v.option3);
-      });
-    }
-    let mainOptionKey = null;
-    let maxCount = 0;
-    for (const [key, valueSet] of Object.entries(optionValueCounts)) {
-      if (valueSet.size > maxCount) {
-        maxCount = valueSet.size;
-        mainOptionKey = key;
-      }
-    }
-    if (mainOptionKey && maxCount > 0) {
-      const optionIndex = parseInt(mainOptionKey.replace("option", ""), 10) - 1;
-      const optionName = options[optionIndex]?.name || mainOptionKey;
-      productVariantAnalysis.innerHTML = `Análise sugere que a opção principal deste produto é a <strong>${optionName}</strong> (<strong>${mainOptionKey}</strong>).`;
-    } else {
-      productVariantAnalysis.textContent = "Não foi possível analisar as variantes deste produto.";
-    }
-
-    productVariantBody.innerHTML = "";
-    if (variants && variants.length > 0) {
-      variants.forEach((variant) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${variant.position}</td><td>${variant.title}</td><td>${variant.price}</td>`;
-        productVariantBody.appendChild(row);
-      });
-    } else {
-      productVariantBody.innerHTML = '<tr><td colspan="3">Nenhuma variante encontrada.</td></tr>';
-    }
-  }
-
-  function displayStoreAuditReport(optionAnalysis) {
-    storeAuditReport.classList.remove("hidden");
-    const {bestOption, stats} = optionAnalysis;
-
+  // --- FUNÇÃO REUTILIZÁVEL ATUALIZADA ---
+  // Agora ela sempre mostra a contagem de produtos, tornando o formato consistente.
+  function generateOptionAnalysisReport(stats, bestOption, context) {
+    let summaryHTML = "";
     if (bestOption !== "Nenhuma") {
-      storeOptionSummary.innerHTML = `Análise geral da loja sugere que a <strong>${bestOption.toUpperCase()}</strong> é a mais provável para conter os TAMANHOS, por ter a maior variedade de valores.`;
+      summaryHTML = `Análise ${context} sugere que a <strong>${bestOption.toUpperCase()}</strong> é a mais provável para conter os TAMANHOS.`;
     } else {
-      storeOptionSummary.textContent = "Não foi possível determinar uma opção principal para os tamanhos na loja.";
+      summaryHTML = `Não foi possível determinar uma opção principal para os tamanhos ${context}.`;
     }
 
-    let detailsText = `Estatísticas Detalhadas da Loja:\n`;
+    let detailsText = `Estatísticas Detalhadas ${context}:\n`;
     detailsText += `------------------------------------\n`;
     for (const option in stats) {
       const {productCount, values} = stats[option];
+      const usePlural = productCount !== 1 ? "s" : "";
       detailsText += `  - ${option.toUpperCase()}:\n`;
-      detailsText += `    - Usada em: ${productCount} produtos com variantes\n`;
 
-      // --- MUDANÇA PRINCIPAL AQUI ---
-      // Removemos o limite e mostramos todos os valores.
+      // Esta linha agora é exibida em ambos os relatórios
+      detailsText += `    - Usada em: ${productCount} produto${usePlural} com variantes\n`;
+
       if (values.length > 0) {
         detailsText += `    - Valores (${values.length} únicos): ${values.join(", ")}`;
       } else {
@@ -151,6 +103,59 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       detailsText += `\n\n`;
     }
-    storeOptionDetails.textContent = detailsText;
+    return {summaryHTML, detailsText};
+  }
+
+  // --- FUNÇÃO DE EXIBIÇÃO DE PRODUTO ÚNICO ATUALIZADA ---
+  function displaySingleProductReport(product) {
+    singleProductReport.classList.remove("hidden");
+
+    productTitle.textContent = product.title || "Produto sem título";
+    if (product.tags && product.tags.length > 0) {
+      const tagsArray = product.tags.split(",").map((tag) => `<span class="tag-badge">${tag.trim()}</span>`);
+      productTags.innerHTML = tagsArray.join(" ");
+    } else {
+      productTags.textContent = "Este produto não possui nenhuma tag.";
+    }
+
+    // ---- LÓGICA DE ANÁLISE CORRIGIDA ----
+    // 1. Calcula as estatísticas completas para este produto
+    const hasVariants = product.variants && product.variants.length > 1;
+    const optionStats = {
+      option1: {
+        productCount: hasVariants && product.options.some((o) => o.position === 1) ? 1 : 0,
+        values: Array.from(new Set(product.variants.map((v) => v.option1).filter(Boolean))),
+      },
+      option2: {
+        productCount: hasVariants && product.options.some((o) => o.position === 2) ? 1 : 0,
+        values: Array.from(new Set(product.variants.map((v) => v.option2).filter(Boolean))),
+      },
+      option3: {
+        productCount: hasVariants && product.options.some((o) => o.position === 3) ? 1 : 0,
+        values: Array.from(new Set(product.variants.map((v) => v.option3).filter(Boolean))),
+      },
+    };
+
+    let bestOption = "Nenhuma";
+    let maxCount = 0;
+    for (const option in optionStats) {
+      if (optionStats[option].values.length > maxCount) {
+        maxCount = optionStats[option].values.length;
+        bestOption = option;
+      }
+    }
+
+    // 2. Gera e exibe o relatório usando a função reutilizável
+    const report = generateOptionAnalysisReport(optionStats, bestOption, "deste Produto");
+    productOptionSummary.innerHTML = report.summaryHTML;
+    productOptionDetails.textContent = report.detailsText;
+  }
+
+  function displayStoreAuditReport(optionAnalysis) {
+    storeAuditReport.classList.remove("hidden");
+
+    const report = generateOptionAnalysisReport(optionAnalysis.stats, optionAnalysis.bestOption, "da Loja (amostra de 15 produtos)");
+    storeOptionSummary.innerHTML = report.summaryHTML;
+    storeOptionDetails.textContent = report.detailsText;
   }
 });
