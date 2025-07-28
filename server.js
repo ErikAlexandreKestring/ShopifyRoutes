@@ -9,7 +9,7 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
-// ROTA 1: Para a auditoria geral das OPTIONS da loja
+// ROTA 1: Auditoria geral OTIMIZADA para 15 produtos
 app.post("/api/store-option-audit", async (req, res) => {
   const {domain, token} = req.body;
 
@@ -17,7 +17,9 @@ app.post("/api/store-option-audit", async (req, res) => {
     return res.status(400).json({error: "Domínio e Token são obrigatórios."});
   }
 
-  let nextPageUrl = `https://${domain}/admin/api/2024-07/products.json?limit=250&fields=variants,options`;
+  // --- MUDANÇA PRINCIPAL AQUI ---
+  // A URL agora busca apenas 15 produtos, sem necessidade de paginação.
+  const auditUrl = `https://${domain}/admin/api/2024-07/products.json?limit=15&fields=variants,options`;
 
   const optionStats = {
     option1: {values: new Set(), productCount: 0},
@@ -26,30 +28,23 @@ app.post("/api/store-option-audit", async (req, res) => {
   };
 
   try {
-    while (nextPageUrl) {
-      const response = await axios.get(nextPageUrl, {
-        headers: {"X-Shopify-Access-Token": token},
-      });
+    // Fazemos uma única chamada à API
+    const response = await axios.get(auditUrl, {
+      headers: {"X-Shopify-Access-Token": token},
+    });
 
-      for (const product of response.data.products) {
-        if (product.variants && product.variants.length > 1) {
-          if (product.options[0] && product.options[0].name !== "Title") optionStats.option1.productCount++;
-          if (product.options[1]) optionStats.option2.productCount++;
-          if (product.options[2]) optionStats.option3.productCount++;
+    // O loop agora é simples, sem 'while', pois só temos uma página de resultados
+    for (const product of response.data.products) {
+      if (product.variants && product.variants.length > 1) {
+        if (product.options[0] && product.options[0].name !== "Title") optionStats.option1.productCount++;
+        if (product.options[1]) optionStats.option2.productCount++;
+        if (product.options[2]) optionStats.option3.productCount++;
 
-          for (const variant of product.variants) {
-            if (variant.option1) optionStats.option1.values.add(variant.option1);
-            if (variant.option2) optionStats.option2.values.add(variant.option2);
-            if (variant.option3) optionStats.option3.values.add(variant.option3);
-          }
+        for (const variant of product.variants) {
+          if (variant.option1) optionStats.option1.values.add(variant.option1);
+          if (variant.option2) optionStats.option2.values.add(variant.option2);
+          if (variant.option3) optionStats.option3.values.add(variant.option3);
         }
-      }
-
-      const linkHeader = response.headers.link;
-      nextPageUrl = null;
-      if (linkHeader) {
-        const nextLink = linkHeader.split(",").find((s) => s.includes('rel="next"'));
-        if (nextLink) nextPageUrl = nextLink.match(/<(.*?)>/)[1];
       }
     }
 
@@ -62,12 +57,10 @@ app.post("/api/store-option-audit", async (req, res) => {
       }
     }
 
-    // --- MUDANÇA PRINCIPAL AQUI ---
-    // Prepara os dados para serem enviados como JSON, convertendo os Sets para Arrays
     const serializableStats = {
       option1: {
         productCount: optionStats.option1.productCount,
-        values: Array.from(optionStats.option1.values).sort(), // Converte para array e ordena
+        values: Array.from(optionStats.option1.values).sort(),
       },
       option2: {
         productCount: optionStats.option2.productCount,
@@ -86,7 +79,6 @@ app.post("/api/store-option-audit", async (req, res) => {
   }
 });
 
-// ROTA 2: Para buscar um produto específico pelo ID
 app.post("/api/single-product-lookup", async (req, res) => {
   const {domain, token, productId} = req.body;
 
