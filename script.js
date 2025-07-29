@@ -1,19 +1,18 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const BACKEND_URL = "https://URL-DO-SEU-BACKEND-AQUI.up.railway.app";
+
   const form = document.getElementById("store-form");
   const resultsContainer = document.getElementById("results-container");
-  const loader = document.getElementById("loader");
-
-  // Elementos do Relatório de Produto Único
-  const singleProductReport = document.getElementById("single-product-report");
-  const productTitle = document.getElementById("product-title");
+  const reportWrapper = document.getElementById("report-wrapper");
+  const reportTitle = document.getElementById("report-title");
+  const tagsSection = document.getElementById("tags-section");
   const productTags = document.getElementById("product-tags");
-  const productOptionSummary = document.getElementById("product-option-summary");
-  const productOptionDetails = document.getElementById("product-option-details");
-
-  // Elementos do Relatório de Auditoria da Loja
-  const storeAuditReport = document.getElementById("store-audit-report");
-  const storeOptionSummary = document.getElementById("store-option-summary");
-  const storeOptionDetails = document.getElementById("store-option-details");
+  const optionsTitle = document.getElementById("options-title");
+  const optionSummary = document.getElementById("option-summary");
+  const optionDetails = document.getElementById("option-details");
+  const errorReport = document.getElementById("error-report");
+  const errorMessage = document.getElementById("error-message");
+  const analyzeButton = document.getElementById("analyze-button");
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -26,34 +25,33 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    analyzeButton.disabled = true;
+    analyzeButton.textContent = "Analisando...";
     resultsContainer.classList.remove("hidden");
-    loader.classList.remove("hidden");
-    singleProductReport.classList.add("hidden");
-    storeAuditReport.classList.add("hidden");
+    reportWrapper.classList.add("hidden");
+    errorReport.classList.add("hidden");
 
     try {
       if (productId) {
         const product = await fetchSingleProduct(domain, token, productId);
         displaySingleProductReport(product);
       } else {
-        const optionAnalysis = await fetchStoreOptionAudit(domain, token);
-        displayStoreAuditReport(optionAnalysis);
+        const storeAudit = await fetchStoreOptionAudit(domain, token);
+        displayStoreAuditReport(storeAudit);
       }
     } catch (error) {
       console.error("Erro:", error);
-      singleProductReport.classList.remove("hidden");
-      storeAuditReport.classList.add("hidden");
-      productTitle.textContent = "Ocorreu um Erro";
-      productTags.innerHTML = `<span class="error">${error.message}</span>`;
-      productOptionSummary.innerHTML = "";
-      productOptionDetails.textContent = "";
+      errorReport.classList.remove("hidden");
+      errorMessage.textContent = error.message;
     } finally {
-      loader.classList.add("hidden");
+      analyzeButton.disabled = false;
+      analyzeButton.textContent = "Analisar";
     }
   });
 
   async function fetchSingleProduct(domain, token, productId) {
-    const response = await fetch("http://localhost:3000/api/single-product-lookup", {
+    // Usa a variável BACKEND_URL para montar a rota
+    const response = await fetch(`${BACKEND_URL}/api/single-product-lookup`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({domain, token, productId}),
@@ -65,7 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function fetchStoreOptionAudit(domain, token) {
-    const response = await fetch("http://localhost:3000/api/store-option-audit", {
+    // Usa a variável BACKEND_URL para montar a rota
+    const response = await fetch(`${BACKEND_URL}/api/store-option-audit`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({domain, token}),
@@ -76,50 +75,48 @@ document.addEventListener("DOMContentLoaded", () => {
     return response.json();
   }
 
-  // --- FUNÇÃO REUTILIZÁVEL ATUALIZADA ---
-  // Agora ela sempre mostra a contagem de produtos, tornando o formato consistente.
-  function generateOptionAnalysisReport(stats, bestOption, context) {
-    let summaryHTML = "";
+  function generateDetailedReportText(stats, bestOption, analyzedProductCount) {
+    const productOrProducts = analyzedProductCount !== 1 ? "produtos" : "produto";
+    let summary = "";
     if (bestOption !== "Nenhuma") {
-      summaryHTML = `Análise ${context} sugere que a <strong>${bestOption.toUpperCase()}</strong> é a mais provável para conter os TAMANHOS.`;
+      summary = `Análise de ${analyzedProductCount} ${productOrProducts} sugere que a <strong>${bestOption.toUpperCase()}</strong> é a mais provável para conter os TAMANHOS.`;
     } else {
-      summaryHTML = `Não foi possível determinar uma opção principal para os tamanhos ${context}.`;
+      summary = `Não foi possível determinar uma opção principal nos ${analyzedProductCount} ${productOrProducts} analisados.`;
     }
 
-    let detailsText = `Estatísticas Detalhadas ${context}:\n`;
-    detailsText += `------------------------------------\n`;
-    for (const option in stats) {
-      const {productCount, values} = stats[option];
+    let details = `Estatísticas Detalhadas:\n`;
+    details += `------------------------------------\n`;
+    for (const optionKey in stats) {
+      const {productCount, values} = stats[optionKey];
       const usePlural = productCount !== 1 ? "s" : "";
-      detailsText += `  - ${option.toUpperCase()}:\n`;
-
-      // Esta linha agora é exibida em ambos os relatórios
-      detailsText += `    - Usada em: ${productCount} produto${usePlural} com variantes\n`;
-
+      details += `  - ${optionKey.toUpperCase()}:\n`;
+      details += `    - Usada em: ${productCount} produto${usePlural} com variantes\n`;
       if (values.length > 0) {
-        detailsText += `    - Valores (${values.length} únicos): ${values.join(", ")}`;
+        details += `    - Valores (${values.length} únicos): ${values.join(", ")}`;
       } else {
-        detailsText += `    - Valores: Nenhum valor encontrado.`;
+        details += `    - Valores: Nenhum valor encontrado.`;
       }
-      detailsText += `\n\n`;
+      details += `\n\n`;
     }
-    return {summaryHTML, detailsText};
+    return {summary, details};
   }
 
-  // --- FUNÇÃO DE EXIBIÇÃO DE PRODUTO ÚNICO ATUALIZADA ---
   function displaySingleProductReport(product) {
-    singleProductReport.classList.remove("hidden");
+    reportWrapper.classList.remove("hidden");
+    tagsSection.classList.remove("hidden");
 
-    productTitle.textContent = product.title || "Produto sem título";
+    reportTitle.textContent = product.title || "Produto Sem Título";
+    optionsTitle.textContent = "Análise de Opções do Produto";
+
     if (product.tags && product.tags.length > 0) {
-      const tagsArray = product.tags.split(",").map((tag) => `<span class="tag-badge">${tag.trim()}</span>`);
-      productTags.innerHTML = tagsArray.join(" ");
+      productTags.innerHTML = product.tags
+        .split(",")
+        .map((tag) => `<span class="tag-badge">${tag.trim()}</span>`)
+        .join(" ");
     } else {
       productTags.textContent = "Este produto não possui nenhuma tag.";
     }
 
-    // ---- LÓGICA DE ANÁLISE CORRIGIDA ----
-    // 1. Calcula as estatísticas completas para este produto
     const hasVariants = product.variants && product.variants.length > 1;
     const optionStats = {
       option1: {
@@ -138,24 +135,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let bestOption = "Nenhuma";
     let maxCount = 0;
-    for (const option in optionStats) {
-      if (optionStats[option].values.length > maxCount) {
-        maxCount = optionStats[option].values.length;
-        bestOption = option;
+    for (const optionKey in optionStats) {
+      if (optionStats[optionKey].values.length > maxCount) {
+        maxCount = optionStats[optionKey].values.length;
+        bestOption = optionKey;
       }
     }
 
-    // 2. Gera e exibe o relatório usando a função reutilizável
-    const report = generateOptionAnalysisReport(optionStats, bestOption, "deste Produto");
-    productOptionSummary.innerHTML = report.summaryHTML;
-    productOptionDetails.textContent = report.detailsText;
+    const {summary, details} = generateDetailedReportText(optionStats, bestOption, 1);
+    optionSummary.innerHTML = summary;
+    optionDetails.textContent = details;
   }
 
-  function displayStoreAuditReport(optionAnalysis) {
-    storeAuditReport.classList.remove("hidden");
+  function displayStoreAuditReport(storeAudit) {
+    reportWrapper.classList.remove("hidden");
+    tagsSection.classList.add("hidden");
 
-    const report = generateOptionAnalysisReport(optionAnalysis.stats, optionAnalysis.bestOption, "da Loja (amostra de 15 produtos)");
-    storeOptionSummary.innerHTML = report.summaryHTML;
-    storeOptionDetails.textContent = report.detailsText;
+    reportTitle.textContent = "Auditoria Geral da Loja";
+    optionsTitle.textContent = `Análise das Opções (baseado em uma amostra de ${storeAudit.analyzedProductCount} produtos)`;
+
+    const {summary, details} = generateDetailedReportText(storeAudit.stats, storeAudit.bestOption, storeAudit.analyzedProductCount);
+    optionSummary.innerHTML = summary;
+    optionDetails.textContent = details;
   }
 });
