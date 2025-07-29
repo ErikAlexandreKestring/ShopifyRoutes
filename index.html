@@ -36,38 +36,27 @@
       </form>
 
       <div id="results-container" class="hidden">
-        <div id="loader" class="hidden">
-          <div class="spinner"></div>
-          <p>Analisando... Isso pode levar alguns minutos para a auditoria geral.</p>
-        </div>
+        <div id="report-wrapper" class="report-wrapper hidden">
+          <h2 id="report-title"></h2>
 
-        <div id="single-product-report" class="report-wrapper hidden">
-          <h2 id="product-title"></h2>
-          <div class="report-section">
+          <div id="tags-section" class="report-section hidden">
             <h3>Tags do Produto</h3>
             <p id="product-tags"></p>
           </div>
-          <div class="report-section">
-            <h3>Análise de Opções do Produto</h3>
-            <div id="product-option-summary"></div>
-            <pre id="product-option-details"></pre>
+
+          <div id="options-section" class="report-section">
+            <h3 id="options-title"></h3>
+            <div id="option-summary"></div>
+            <pre id="option-details"></pre>
           </div>
         </div>
 
-        <div id="store-audit-report" class="report-wrapper hidden">
-          <h2>Auditoria Geral das Opções da Loja (Amostra de 15 Produtos)</h2>
-          <div class="report-section">
-            <div id="store-option-summary"></div>
-            <pre id="store-option-details"></pre>
-          </div>
+        <div id="error-report" class="report-wrapper hidden">
+          <h2>Ocorreu um Erro</h2>
+          <p class="error" id="error-message"></p>
         </div>
-
       </div>
     </main>
-
-    <footer>
-      <p class="warning"><strong>Aviso:</strong> Esta é uma ferramenta para uso local.</p>
-    </footer>
   </div>
 
   <script src="script.js"></script>
