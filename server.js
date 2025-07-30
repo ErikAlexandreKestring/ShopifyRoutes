@@ -4,7 +4,7 @@ const axios = require("axios");
 const cors = require("cors");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // --- CORS ---
 // Permite todas as origens (ajuste se precisar restringir)
