@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auditor de Loja Shopify</title>
+  <title>Auditor Catálogo Shopify</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,25 +14,25 @@
 <body>
   <div class="container">
     <header>
-      <h1>Auditor de Loja Shopify</h1>
-      <p>Faça uma auditoria geral das variantes da loja ou analise um produto específico.</p>
+      <h1>Auditor Catálogo Shopify</h1>
+      <p>Faça uma consulta geral das posições dos tamanhos da loja ou analise um produto específico para consultar suas tags.</p>
     </header>
 
     <main>
       <form id="store-form">
         <div class="form-group">
-          <label for="store-domain">Domínio da Loja Shopify</label>
+          <label for="store-domain">Domínio Shopify da Loja</label>
           <input type="text" id="store-domain" placeholder="ex: sua-loja.myshopify.com" required>
         </div>
         <div class="form-group">
-          <label for="api-token">Token de Acesso da API Admin</label>
+          <label for="api-token">Token de Acesso Shopify</label>
           <input type="text" id="api-token" placeholder="Começa com 'shpat_...'" required>
         </div>
         <div class="form-group">
           <label for="product-id">ID do Produto (Opcional)</label>
-          <input type="text" id="product-id" placeholder="Deixe em branco para uma análise geral">
+          <input type="text" id="product-id" placeholder="Deixe em branco para um consultar apenas os tamanhos">
         </div>
-        <button type="submit" id="analyze-button">Analisar</button>
+        <button type="submit" id="analyze-button">Consultar</button>
       </form>
 
       <div id="results-container" class="hidden">

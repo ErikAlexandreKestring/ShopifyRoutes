@@ -4,9 +4,13 @@ const axios = require("axios");
 const cors = require("cors");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+const corsOptions = {
+  origin: ["https://shopify-tags-options.vercel.app", "http://127.0.0.1:5500"],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.post("/api/store-option-audit", async (req, res) => {
@@ -81,5 +85,5 @@ app.post("/api/single-product-lookup", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor proxy rodando na porta http://localhost:${PORT}`);
+  console.log(`🚀 Servidor proxy rodando na porta ${PORT}`);
 });
