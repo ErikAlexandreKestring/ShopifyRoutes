@@ -6,14 +6,21 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- MUDANÇA FINAL ---
-// Simplificamos o CORS para máxima compatibilidade, permitindo todas as origens.
-// Esta deve ser a PRIMEIRA linha app.use()
+// --- CORS ---
+// Permite todas as origens (ajuste se precisar restringir)
 app.use(cors());
+// Permite resposta automática para preflight (OPTIONS)
+app.options("*", cors());
 
-// O express.json() vem DEPOIS do cors.
+// --- JSON parser ---
 app.use(express.json());
 
+// --- Rota para teste rápido no navegador ---
+app.get("/", (req, res) => {
+  res.send("API está rodando");
+});
+
+// --- Rota: Auditoria de opções ---
 app.post("/api/store-option-audit", async (req, res) => {
   const {domain, token} = req.body;
   if (!domain || !token) {
@@ -28,7 +35,9 @@ app.post("/api/store-option-audit", async (req, res) => {
   };
 
   try {
-    const response = await axios.get(auditUrl, {headers: {"X-Shopify-Access-Token": token}});
+    const response = await axios.get(auditUrl, {
+      headers: {"X-Shopify-Access-Token": token},
+    });
 
     for (const product of response.data.products) {
       if (product.variants && product.variants.length > 1) {
@@ -54,9 +63,18 @@ app.post("/api/store-option-audit", async (req, res) => {
     }
 
     const serializableStats = {
-      option1: {productCount: optionStats.option1.productCount, values: Array.from(optionStats.option1.values).sort()},
-      option2: {productCount: optionStats.option2.productCount, values: Array.from(optionStats.option2.values).sort()},
-      option3: {productCount: optionStats.option3.productCount, values: Array.from(optionStats.option3.values).sort()},
+      option1: {
+        productCount: optionStats.option1.productCount,
+        values: Array.from(optionStats.option1.values).sort(),
+      },
+      option2: {
+        productCount: optionStats.option2.productCount,
+        values: Array.from(optionStats.option2.values).sort(),
+      },
+      option3: {
+        productCount: optionStats.option3.productCount,
+        values: Array.from(optionStats.option3.values).sort(),
+      },
     };
 
     res.json({
@@ -69,6 +87,7 @@ app.post("/api/store-option-audit", async (req, res) => {
   }
 });
 
+// --- Rota: Busca produto específico ---
 app.post("/api/single-product-lookup", async (req, res) => {
   const {domain, token, productId} = req.body;
   if (!domain || !token || !productId) {
@@ -76,7 +95,9 @@ app.post("/api/single-product-lookup", async (req, res) => {
   }
   const productUrl = `https://${domain}/admin/api/2024-07/products/${productId}.json`;
   try {
-    const response = await axios.get(productUrl, {headers: {"X-Shopify-Access-Token": token}});
+    const response = await axios.get(productUrl, {
+      headers: {"X-Shopify-Access-Token": token},
+    });
     res.json(response.data.product);
   } catch (error) {
     const status = error.response?.status || 500;
@@ -85,6 +106,7 @@ app.post("/api/single-product-lookup", async (req, res) => {
   }
 });
 
+// --- Start ---
 app.listen(PORT, () => {
   console.log(`🚀 Servidor proxy rodando na porta ${PORT}`);
 });
