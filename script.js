@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const BACKEND_URL = "https://URL-DO-SEU-BACKEND-AQUI.up.railway.app";
+  const BACKEND_URL = "https://shopifyroutes-production.up.railway.app";
 
   const form = document.getElementById("store-form");
   const resultsContainer = document.getElementById("results-container");
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     analyzeButton.disabled = true;
-    analyzeButton.textContent = "Analisando...";
+    analyzeButton.textContent = "Consultando...";
     resultsContainer.classList.remove("hidden");
     reportWrapper.classList.add("hidden");
     errorReport.classList.add("hidden");
@@ -45,12 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
       errorMessage.textContent = error.message;
     } finally {
       analyzeButton.disabled = false;
-      analyzeButton.textContent = "Analisar";
+      analyzeButton.textContent = "Consultar";
     }
   });
 
   async function fetchSingleProduct(domain, token, productId) {
-    // Usa a variável BACKEND_URL para montar a rota
     const response = await fetch(`${BACKEND_URL}/api/single-product-lookup`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -63,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function fetchStoreOptionAudit(domain, token) {
-    // Usa a variável BACKEND_URL para montar a rota
     const response = await fetch(`${BACKEND_URL}/api/store-option-audit`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -79,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const productOrProducts = analyzedProductCount !== 1 ? "produtos" : "produto";
     let summary = "";
     if (bestOption !== "Nenhuma") {
-      summary = `Análise de ${analyzedProductCount} ${productOrProducts} sugere que a <strong>${bestOption.toUpperCase()}</strong> é a mais provável para conter os TAMANHOS.`;
+      summary = `Consulta de ${analyzedProductCount} ${productOrProducts} sugere que a <strong>${bestOption.toUpperCase()}</strong> é a mais provável para conter os TAMANHOS.`;
     } else {
       summary = `Não foi possível determinar uma opção principal nos ${analyzedProductCount} ${productOrProducts} analisados.`;
     }
@@ -104,7 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function displaySingleProductReport(product) {
     reportWrapper.classList.remove("hidden");
     tagsSection.classList.remove("hidden");
-
     reportTitle.textContent = product.title || "Produto Sem Título";
     optionsTitle.textContent = "Análise de Opções do Produto";
 
@@ -150,7 +147,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function displayStoreAuditReport(storeAudit) {
     reportWrapper.classList.remove("hidden");
     tagsSection.classList.add("hidden");
-
     reportTitle.textContent = "Auditoria Geral da Loja";
     optionsTitle.textContent = `Análise das Opções (baseado em uma amostra de ${storeAudit.analyzedProductCount} produtos)`;
 
