@@ -4,15 +4,12 @@ const axios = require("axios");
 const cors = require("cors");
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 
-// --- CORS ---
-// Permite todas as origens (ajuste se precisar restringir)
+// --- CORREÇÃO AQUI ---
+// A linha app.options("*", cors()); foi REMOVIDA.
+// Deixamos apenas o app.use(cors()) que é mais simples e compatível.
 app.use(cors());
-// Permite resposta automática para preflight (OPTIONS)
-app.options("*", cors());
-
-// --- JSON parser ---
 app.use(express.json());
 
 // --- Rota para teste rápido no navegador ---
