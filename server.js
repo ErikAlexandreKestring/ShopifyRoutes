@@ -6,8 +6,18 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const whitelist = ["https://shopify-tags-options.vercel.app", "http://127.0.0.1:5500", "http://localhost:5500"];
+
 const corsOptions = {
-  origin: ["https://shopify-tags-options.vercel.app", "http://127.0.0.1:5500"],
+  origin: function (origin, callback) {
+    console.log("Requisição recebida da origem:", origin);
+
+    if (whitelist.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error("Origem não permitida pelo CORS"));
+    }
+  },
 };
 
 app.use(cors(corsOptions));
