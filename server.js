@@ -5,7 +5,7 @@ const cors = require("cors");
 
 const app = express();
 // Usa a porta do .env ou 3000 por padrão
-const PORT = "https://shopifyroutes.onrender.com";
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
