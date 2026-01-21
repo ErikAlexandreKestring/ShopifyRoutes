@@ -2,5 +2,9 @@
   "version": 2,
   "public": true,
   "cleanUrls": true,
-  "rewrites": [{"source": "/(.*)", "destination": "/$1"}]
+  "rewrites": [
+    {"source": "/", "destination": "/index.html"},
+    {"source": "/V2", "destination": "/V2.html"},
+    {"source": "/V1", "destination": "/V1.html"}
+  ]
 }
