@@ -50,6 +50,22 @@ header p {
   color: #a0a0a0;
 }
 
+.nav-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: #000;
+  background: #fff;
+  padding: 5px;
+  text-decoration: none;
+  font-weight: 500;
+  border: 1px solid #fff;
+  transition: 0.3s;
+}
+
+.nav-link:hover {
+  opacity: 0.5;
+}
+
 .form-group {
   margin-bottom: 20px;
 }
