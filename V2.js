@@ -21,95 +21,73 @@ document.addEventListener("DOMContentLoaded", () => {
     const clientSecret = document.getElementById("client-secret").value.trim();
     const productId = document.getElementById("product-id").value.trim();
 
-    if (!domain || !clientId || !clientSecret) {
-      alert("Domínio, Client ID e Secret são obrigatórios.");
-      return;
-    }
-
     analyzeButton.disabled = true;
     analyzeButton.textContent = "Autenticando...";
     resultsContainer.classList.remove("hidden");
     reportWrapper.classList.add("hidden");
     errorReport.classList.add("hidden");
-    tagsSection.classList.add("hidden");
 
     try {
-      const token = await fetchTemporaryToken(domain, clientId, clientSecret);
+      const authResponse = await fetch(`${BACKEND_URL}/api/get-shopify-token`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({domain, clientId, clientSecret}),
+      });
+
+      const authData = await authResponse.json();
+      if (!authResponse.ok) throw new Error(authData.error);
+      const token = authData.accessToken;
 
       analyzeButton.textContent = "Consultando...";
 
       if (productId) {
-        const product = await fetchSingleProduct(domain, token, productId);
+        const response = await fetch(`${BACKEND_URL}/api/single-product-lookup`, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({domain, token, productId}),
+        });
+        const product = await response.json();
+        if (!response.ok) throw new Error(product.error);
         displaySingleProductReport(product);
       } else {
-        const storeAudit = await fetchStoreOptionAudit(domain, token);
-        displayStoreAuditReport(storeAudit);
+        const response = await fetch(`${BACKEND_URL}/api/store-option-audit`, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({domain, token}),
+        });
+        const auditData = await response.json();
+        if (!response.ok) throw new Error(auditData.error);
+        displayStoreAuditReport(auditData);
       }
     } catch (error) {
-      console.error("Erro:", error);
       errorReport.classList.remove("hidden");
       errorMessage.textContent = error.message;
     } finally {
       analyzeButton.disabled = false;
-      analyzeButton.textContent = "Autenticar e Consultar";
+      analyzeButton.textContent = "Consultar";
     }
   });
-
-  async function fetchTemporaryToken(domain, clientId, clientSecret) {
-    const response = await fetch(`${BACKEND_URL}/api/get-shopify-token`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({domain, clientId, clientSecret}),
-    });
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || "Falha na autenticação OAuth.");
-    }
-    const data = await response.json();
-    return data.accessToken;
-  }
-
-  async function fetchSingleProduct(domain, token, productId) {
-    const response = await fetch(`${BACKEND_URL}/api/single-product-lookup`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({domain, token, productId}),
-    });
-    if (!response.ok) throw new Error((await response.json()).error);
-    return response.json();
-  }
-
-  async function fetchStoreOptionAudit(domain, token) {
-    const response = await fetch(`${BACKEND_URL}/api/store-option-audit`, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({domain, token}),
-    });
-    if (!response.ok) throw new Error((await response.json()).error);
-    return response.json();
-  }
 
   function displaySingleProductReport(product) {
     reportWrapper.classList.remove("hidden");
     tagsSection.classList.remove("hidden");
     reportTitle.textContent = product.title || "Produto Encontrado";
-    optionsTitle.textContent = "Análise de Opções deste Produto";
+    optionsTitle.textContent = "Opções do Produto";
 
     productTags.innerHTML = product.tags
       ? product.tags
           .split(",")
           .map((t) => `<span class="tag-badge">${t.trim()}</span>`)
           .join(" ")
-      : "Este produto não possui tags.";
+      : "Sem tags.";
 
     const optionStats = {
       option1: {productCount: 1, values: Array.from(new Set(product.variants.map((v) => v.option1).filter(Boolean)))},
       option2: {productCount: 1, values: Array.from(new Set(product.variants.map((v) => v.option2).filter(Boolean)))},
       option3: {productCount: 1, values: Array.from(new Set(product.variants.map((v) => v.option3).filter(Boolean)))},
     };
-
-    const {summary, details} = generateDetailedReportText(optionStats, "Nenhuma", 1);
-    optionSummary.innerHTML = "Exibindo valores das variantes encontradas para este produto.";
+    const {details} = generateDetailedReportText(optionStats, "Nenhuma", 1);
+    optionSummary.innerHTML = "Análise das variantes do produto específico.";
     optionDetails.textContent = details;
   }
 
@@ -117,23 +95,19 @@ document.addEventListener("DOMContentLoaded", () => {
     reportWrapper.classList.remove("hidden");
     tagsSection.classList.add("hidden");
     reportTitle.textContent = "Auditoria Geral da Loja";
-    optionsTitle.textContent = `Análise baseada em ${storeAudit.analyzedProductCount} produtos`;
-
     const {summary, details} = generateDetailedReportText(storeAudit.stats, storeAudit.bestOption, storeAudit.analyzedProductCount);
     optionSummary.innerHTML = summary;
     optionDetails.textContent = details;
   }
 
   function generateDetailedReportText(stats, bestOption, analyzedProductCount) {
-    const productOrProducts = analyzedProductCount !== 1 ? "produtos" : "produto";
-    let summary =
-      bestOption !== "Nenhuma" ? `A análise sugere que a opção <strong>${bestOption.toUpperCase()}</strong> contém os TAMANHOS.` : "";
-
+    const pText = analyzedProductCount !== 1 ? "produtos" : "produto";
+    let summary = bestOption !== "Nenhuma" ? `Provável opção de TAMANHOS: <strong>${bestOption.toUpperCase()}</strong>.` : "";
     let details = `Estatísticas Detalhadas:\n------------------------------------\n`;
-    for (const optionKey in stats) {
-      const {productCount, values} = stats[optionKey];
-      details += `  - ${optionKey.toUpperCase()}:\n    - Usada em: ${productCount} ${productOrProducts}\n`;
-      details += `    - Valores: ${values.length > 0 ? values.join(", ") : "Nenhum"}\n\n`;
+    for (const key in stats) {
+      details += `  - ${key.toUpperCase()}:\n    - Usada em: ${stats[key].productCount} ${pText}\n    - Amostra: ${stats[key].values.join(
+        ", "
+      )}\n\n`;
     }
     return {summary, details};
   }

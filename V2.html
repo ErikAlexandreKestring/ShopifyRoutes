@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="pt-br">
 
 <head>
@@ -5,59 +6,63 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auditor Shopify - Nova Versão</title>
   <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 
-<body cz-shortcut-listen="true">
+<body>
   <div class="container">
-    <a href="./index.html" class="nav-link">Ir para versão V1</a>
+    <a href="index.html" class="nav-link">Ir para versão V1</a>
     <header>
-      <h1>Conexão via clientID/secret</h1>
-      <p>Insira as credenciais do App (clientID/secret) para gerar um token de 24h e realizar a auditoria geral.</p>
+      <h1>Conexão via clientID/Secret</h1>
+      <p>Gere um token de 24h para realizar auditoria geral ou consultar tags de um produto específico.</p>
     </header>
 
     <main>
       <form id="store-form">
         <div class="form-group">
           <label for="store-domain">Domínio Shopify</label>
-          <input type="text" id="store-domain" placeholder="ex: sua-loja.myshopify.com" required="">
+          <input type="text" id="store-domain" placeholder="ex: sua-loja.myshopify.com" required>
         </div>
         <div class="form-group">
           <label for="client-id">Client ID</label>
-          <input type="text" id="client-id" placeholder="API Key do aplicativo" required="">
+          <input type="text" id="client-id" placeholder="2d726f9b1fc5..." required>
         </div>
         <div class="form-group">
           <label for="client-secret">Client Secret</label>
-          <input type="text" id="client-secret" placeholder="Secret Key do aplicativo" required="">
+          <input type="text" id="client-secret" placeholder="ex: shpss..." required>
         </div>
         <div class="form-group">
           <label for="product-id">ID do Produto (Opcional)</label>
-          <input type="text" id="product-id" placeholder="ID para busca específica de tags">
+          <input type="text" id="product-id" placeholder="Preencha para ver as tags do produto">
         </div>
-        <button type="submit" id="analyze-button">Autenticar e Consultar</button>
-        </form>
+        <button type="submit" id="analyze-button">Consultar</button>
       </form>
 
       <div id="results-container" class="hidden">
         <div id="report-wrapper" class="report-wrapper hidden">
           <h2 id="report-title"></h2>
+
+          <div id="tags-section" class="report-section hidden">
+            <h3>Tags do Produto</h3>
+            <p id="product-tags"></p>
+          </div>
+
           <div id="options-section" class="report-section">
             <h3 id="options-title"></h3>
             <div id="option-summary"></div>
             <pre id="option-details"></pre>
           </div>
         </div>
+
         <div id="error-report" class="report-wrapper hidden">
           <h2>Ocorreu um Erro</h2>
           <p class="error" id="error-message" style="color: var(--error-color);"></p>
         </div>
       </div>
     </main>
-  </div>
-
-  <script src="V2.js"></script>
-
-
-</body><y29d17d07-6ae2-45c7-a563-72c7c3eb906b></y29d17d07-6ae2-45c7-a563-72c7c3eb906b>
-
-</html>
+    </div>
+    <script src="V2.js"></script>
+    </body>
+    </html>
