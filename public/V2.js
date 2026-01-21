@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const BACKEND_URL = "http://localhost:3000";
+  const BACKEND_URL = "https://shopifyroutes.onrender.com";
 
   const form = document.getElementById("store-form");
   const resultsContainer = document.getElementById("results-container");
